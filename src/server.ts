@@ -34,7 +34,7 @@ const io = new Server(httpServer, {
 });
 
 io.on("connection", (socket) => {
-  console.log("🟢 socket connected:", socket.id);
+  console.log(`[SOCKET] 🟢 New Connection: ${socket.id} (Transport: ${socket.conn.transport.name})`);
 
   // user joins immediately
   const player: Player = {
@@ -58,6 +58,7 @@ io.on("connection", (socket) => {
   users.set(socket.id, player);
 
   socket.on("SET_NAME", ({ name }) => {
+    console.log(`[SOCKET] SET_NAME from ${socket.id}: ${name}`);
     const p = users.get(socket.id);
     if (!p) return;
 
@@ -140,12 +141,13 @@ io.on("connection", (socket) => {
     p.emote = type;
     p.emoteUntil = now + 2000; // Show for 2 seconds
     p.lastEmoteTime = now;
+    console.log(`[SOCKET] EMOTE from ${p.name}: ${type}`);
   });
 
-  socket.on("disconnect", () => {
+  socket.on("disconnect", (reason) => {
+    console.log(`[SOCKET] 🔴 Disconnected: ${socket.id} (Reason: ${reason})`);
     users.delete(socket.id);
     io.emit("USER_LEFT", socket.id);
-    console.log("🔴 user left:", socket.id);
   });
 });
 
